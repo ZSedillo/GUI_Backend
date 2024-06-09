@@ -1,4 +1,4 @@
-package MP1;
+package controller;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -11,32 +11,23 @@ package MP1;
  * @author Zandro
  */
 
+import java.awt.event.*;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.time.*;
-import java.time.format.*;
-import java.util.*;
+import java.sql.*;
 import java.util.List;
 
-public class ListOfRecords implements ActionListener{
+public class ListOfRecordsRestricted implements ActionListener{
     private JFrame f;
     private JPanel p1, p2, p3;
     private JTextArea recordList;
 
-    private JButton addRec,updRec,removeRec,logout;
+    private JButton logout;
     String formatOutPutText = String.format("%30s%40s%30s%n", "Email", "Password", "UserRole");
     
-    List<String> recordHolder;
     private LoginScreen loginScreen;
 
-    public ListOfRecords(List<String> recordHolder,LoginScreen loginScreen) {
+    public ListOfRecordsRestricted(LoginScreen loginScreen) {
         this.loginScreen = loginScreen;
         f = new JFrame("List of Record");
         p1 = new JPanel();
@@ -51,24 +42,16 @@ public class ListOfRecords implements ActionListener{
 
         JScrollPane scrollPane = new JScrollPane(recordList);
 
-        addRec = new JButton("Add Record");
-        updRec = new JButton("Update Record");
-        removeRec = new JButton("Remove Record");
         logout = new JButton("Logout");
 
-        p1.add(scrollPane);
-        p2.add(addRec);
-        p2.add(updRec);
-        p2.add(removeRec);
+        p1.add(scrollPane); // Add JTextArea to panel p1
+        p2.setLayout(new FlowLayout(FlowLayout.CENTER));
         p3.add(logout);
 
-        f.add(p1, BorderLayout.NORTH);
-        f.add(p2,BorderLayout.CENTER);
+        // Add panel p1 to the frame
+        f.add(p1, BorderLayout.CENTER);
         f.add(p3, BorderLayout.SOUTH);
         
-        addRec.addActionListener(this);
-        updRec.addActionListener(this);
-        removeRec.addActionListener(this);
         logout.addActionListener(this);
 
         f.setSize(550, 320);
@@ -76,29 +59,17 @@ public class ListOfRecords implements ActionListener{
         f.setVisible(true);
         f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+        // Fetch and display user data directly
         OutputRecords();
     }
     
     public void actionPerformed(ActionEvent e){
         Object source = e.getSource();
-        if(source.equals(addRec)){
-            AddRecord window = new AddRecord(this.loginScreen);
-            f.dispose();
-        }
-        else if(source.equals(removeRec)){
-            RemoveRecord window = new RemoveRecord(this.loginScreen);
-            f.dispose();
-        }
-        else if(source.equals(updRec)){
-            UpdateRecord window = new UpdateRecord(this.loginScreen);
-            f.dispose();
-        }
-        else if(source.equals(logout)){
+        if(source.equals(logout)){
             loginScreen.showLoginScreen();
             f.dispose();
         }
     }
-    
 
     private void OutputRecords() {
         try {
@@ -124,10 +95,11 @@ public class ListOfRecords implements ActionListener{
                 if(userRole.equals("GUEST")){
                     adjust = 2;
                 }
-                String outputRecord = String.format("%25s%" + (30 + adjust) + "s%30s%n", email, passwordFromDB, userRole);
+                 String outputRecord = String.format("%25s%" + (30 + adjust) + "s%30s%n", email, passwordFromDB, userRole);
                 recordList.append(outputRecord);
             }
 
+            // Close the resources
             rs.close();
             stmt.close();
             con.close();
